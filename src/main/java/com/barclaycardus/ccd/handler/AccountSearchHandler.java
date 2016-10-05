@@ -15,7 +15,6 @@ import java.util.List;
  * Created by abhishek on 02/05/16.
  */
 
-@Component
 public class AccountSearchHandler extends SearchHandler {
 
     private static final String SENSITIVE_DATA_TYPE = "Account Number";
