@@ -9,7 +9,7 @@ import java.io.IOException;
 public class App {
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfiguration.class);
         ApplicationManager applicationManager = context.getBean(ApplicationManager.class);

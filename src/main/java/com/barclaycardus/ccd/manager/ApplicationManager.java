@@ -3,8 +3,11 @@ package com.barclaycardus.ccd.manager;
 import com.barclaycardus.ccd.config.ConfigurationPropertyHolder;
 import com.barclaycardus.ccd.dto.ArgumentData;
 import com.barclaycardus.ccd.parser.ArgumentParser;
+import com.barclaycardus.ccd.processor.FileProcessingQueue;
 import com.barclaycardus.ccd.processor.FileProcessor;
 import com.barclaycardus.ccd.validator.ArgumentValidator;
+import com.barclaycardus.ccd.writer.ExcelFileWriter;
+import com.barclaycardus.ccd.writer.Writer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -14,7 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by abhishek on 29/04/16.
@@ -29,7 +35,7 @@ public class ApplicationManager {
     private ArgumentValidator argumentValidator;
 
     @Autowired
-    private FileProcessor fileProcessor;
+    private FileProcessingQueue fileProcessingQueue;
 
     @Autowired
     private ConfigurationPropertyHolder configurationPropertyHolder;
@@ -38,7 +44,7 @@ public class ApplicationManager {
 
     private ArgumentData argumentData;
 
-    public void process(String[] arguments) throws IOException {
+    public void process(String[] arguments) throws IOException, InterruptedException {
         argumentData = argumentParser.parse(arguments);
 
         try {
@@ -53,15 +59,25 @@ public class ApplicationManager {
         Collection<File> logFiles = FileUtils.listFiles(inputFolder, new WildcardFileFilter(configurationPropertyHolder.getLogFileFormat()),
                 DirectoryFileFilter.DIRECTORY);
 
-        try {
-            for (File logFile : logFiles) {
-                fileProcessor.process(logFile.getPath());
-            }
-        } catch (Exception exp) {
-            logger.error("Exception occured: " + exp.getMessage());
+        for(File logFile : logFiles) {
+            fileProcessingQueue.enqueue(logFile);
         }
 
-        System.out.println("Success!");
+        List<FileProcessor> fileProcessors= new ArrayList<>();
+        List<String> timestampPatterns = configurationPropertyHolder.getTimestampPatterns();
+        Writer writer = new ExcelFileWriter(new File(argumentData.getOutputFilePath()));
+
+        for(int i = 0; i < configurationPropertyHolder.getThreadCount(); i++) {
+            FileProcessor fileProcessor = new FileProcessor((i + 1), fileProcessingQueue, timestampPatterns, writer);
+            fileProcessors.add(fileProcessor);
+            fileProcessor.process();
+        }
+
+        for(FileProcessor fileProcessor : fileProcessors) {
+            fileProcessor.getThread().join();
+        }
+
+        logger.info("Success!");
     }
 
     public ArgumentData getArgumentData() {

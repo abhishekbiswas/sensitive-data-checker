@@ -12,45 +12,34 @@ public class ResultEntry {
     private String loggingTimestamp;
     private String logData;
 
-    public String getType() {
-        return type;
+    public ResultEntry(Builder builder) {
+        type = builder.type;
+        sensitiveData = builder.sensitiveData;
+        filePath = builder.filePath;
+        loggingTimestamp = builder.loggingTimestamp;
+        logData = builder.logData;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public String getType() {
+        return type;
     }
 
     public String getSensitiveData() {
         return sensitiveData;
     }
 
-    public void setSensitiveData(String sensitiveData) {
-        this.sensitiveData = sensitiveData;
-    }
-
     public String getFilePath() {
         return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public String getLoggingTimestamp() {
         return loggingTimestamp;
     }
 
-    public void setLoggingTimestamp(String loggingTimestamp) {
-        this.loggingTimestamp = loggingTimestamp;
-    }
-
     public String getLogData() {
         return logData;
     }
 
-    public void setLogData(String logData) {
-        this.logData = logData;
-    }
 
     public static class Builder {
 
@@ -86,13 +75,7 @@ public class ResultEntry {
         }
 
         public ResultEntry build() {
-            ResultEntry resultEntry = new ResultEntry();
-            resultEntry.setType(type);
-            resultEntry.setSensitiveData(sensitiveData);
-            resultEntry.setFilePath(filePath);
-            resultEntry.setLoggingTimestamp(loggingTimestamp);
-            resultEntry.setLogData(logData);
-            return resultEntry;
+            return new ResultEntry(this);
         }
     }
 

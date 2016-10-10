@@ -1,5 +1,6 @@
 package com.barclaycardus.ccd.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,43 +12,49 @@ public class ConfigurationPropertyHolder {
 
     private String logFileFormat;
     private List<String> timestampPatterns;
+    private int threadCount;
+
+    public ConfigurationPropertyHolder(Builder builder) {
+        logFileFormat = builder.logFileFormat;
+        timestampPatterns = builder.timestampPatterns;
+        threadCount = builder.threadCount;
+    }
 
     public String getLogFileFormat() {
         return logFileFormat;
-    }
-
-    public void setLogFileFormat(String logFileFormat) {
-        this.logFileFormat = logFileFormat;
     }
 
     public List<String> getTimestampPatterns() {
         return timestampPatterns;
     }
 
-    public void setTimestampPatterns(List<String> timestampPatterns) {
-        this.timestampPatterns = timestampPatterns;
+    public int getThreadCount() {
+        return threadCount;
     }
 
     public static class Builder {
 
         private String logFileFormat;
-        private String timestampPatterns;
+        private List<String> timestampPatterns;
+        private int threadCount;
 
         public Builder logFileFormat(String logFileFormat) {
             this.logFileFormat = logFileFormat;
             return this;
         }
 
-        public Builder timestampPatterns(String timestampPatterns) {
+        public Builder timestampPatterns(List<String> timestampPatterns) {
             this.timestampPatterns = timestampPatterns;
             return this;
         }
 
+        public Builder threadCount(int threadCount) {
+            this.threadCount = threadCount;
+            return this;
+        }
+
         ConfigurationPropertyHolder build() {
-            ConfigurationPropertyHolder configurationPropertyHolder = new ConfigurationPropertyHolder();
-            configurationPropertyHolder.setLogFileFormat(logFileFormat);
-            configurationPropertyHolder.setTimestampPatterns(Arrays.asList(timestampPatterns.split(";")));
-            return configurationPropertyHolder;
+            return new ConfigurationPropertyHolder(this);
         }
 
     }

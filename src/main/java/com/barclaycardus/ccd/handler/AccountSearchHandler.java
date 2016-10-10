@@ -23,17 +23,17 @@ public class AccountSearchHandler extends SearchHandler {
     private static final int NUMBER_OF_DIGITS_IN_15_DIGIT_ACCOUNT_NUMBER = 15;
     private static final int NUMBER_OF_DIGITS_IN_16_DIGIT_ACCOUNT_NUMBER = 16;
 
+    private Writer writer;
 
-    @Autowired
-    DigitSequenceFinder digitSequenceFinder;
+    public AccountSearchHandler(Writer writer) {
+        this.writer = writer;
+    }
 
-    @Autowired
-    Writer writer;
 
     public void handle(Log log) throws IOException {
-        List<String> fifteenDigitAccountNumbers = digitSequenceFinder.findSequenceFrom(log.getDetails(),
+        List<String> fifteenDigitAccountNumbers = DigitSequenceFinder.findSequenceFrom(log.getDetails(),
                                                             NUMBER_OF_DIGITS_IN_15_DIGIT_ACCOUNT_NUMBER);
-        List<String> sixteenDigitAccountNumbers = digitSequenceFinder.findSequenceFrom(log.getDetails(),
+        List<String> sixteenDigitAccountNumbers = DigitSequenceFinder.findSequenceFrom(log.getDetails(),
                                                             NUMBER_OF_DIGITS_IN_16_DIGIT_ACCOUNT_NUMBER);
         List<String> validatedAccountNumbers = new ArrayList<>();
 
@@ -45,15 +45,18 @@ public class AccountSearchHandler extends SearchHandler {
         }
 
         if(!validatedAccountNumbers.isEmpty()) {
-            ResultEntry resultEntry = new ResultEntry.Builder()
+             ResultEntry resultEntry = new ResultEntry.Builder()
                     .type(SENSITIVE_DATA_TYPE)
                     .sensitiveData(getConcatenatedAccountNumberOutOf(validatedAccountNumbers))
                     .filePath(log.getFilePath())
                     .loggingTimestamp(log.getTimestamp())
                     .logData(log.getDetails())
                     .build();
-
             writer.write(resultEntry);
+        }
+
+        if(searchHandler != null) {
+            searchHandler.handle(log);
         }
     }
 

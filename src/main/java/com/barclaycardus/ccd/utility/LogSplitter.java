@@ -1,4 +1,4 @@
-package com.barclaycardus.ccd.splitter;
+package com.barclaycardus.ccd.utility;
 
 import com.barclaycardus.ccd.dto.Log;
 
@@ -10,10 +10,11 @@ import java.util.regex.Pattern;
 /**
  * Created by abhishek on 30/04/16.
  */
-public class DefaultLogSplitter implements LogSplitter {
+public class LogSplitter {
 
-    @Override
-    public List<Log> split(String buffer, String pattern, String filePath) {
+    private LogSplitter() {}
+
+    public static List<Log> split(String buffer, String pattern, String filePath) {
         List<Log> logs  = new ArrayList<>();
         Pattern timestampPattern = Pattern.compile(pattern);
         Matcher matcher = timestampPattern.matcher(buffer);

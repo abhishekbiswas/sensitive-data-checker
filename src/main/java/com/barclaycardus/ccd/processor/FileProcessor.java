@@ -1,13 +1,14 @@
 package com.barclaycardus.ccd.processor;
 
-import com.barclaycardus.ccd.config.ConfigurationPropertyHolder;
 import com.barclaycardus.ccd.dto.Log;
+import com.barclaycardus.ccd.handler.AccountSearchHandler;
 import com.barclaycardus.ccd.handler.SearchHandler;
-import com.barclaycardus.ccd.splitter.LogSplitter;
+import com.barclaycardus.ccd.utility.LogSplitter;
+import com.barclaycardus.ccd.writer.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Created by abhishek on 30/04/16.
  */
-public class FileProcessor {
+public class FileProcessor implements Runnable {
 
     private static final int START_INDEX = 0;
     private static final int MAX_BUFFER_SIZE = 1024*1024;
@@ -27,63 +28,86 @@ public class FileProcessor {
     private static final Logger logger = LoggerFactory.getLogger(FileProcessor.class);
 
 
+    private int id;
+    private FileProcessingQueue fileProcessingQueue;
+    private List<String> timestampPatterns;
+    SearchHandler searchHandlerChain;
+    Writer writer;
+
     private String oldBufferString = "";
     private int bytesProcessed = 0;
 
-
-    @Autowired
-    LogSplitter logSplitter;
-
-    @Autowired
-    ConfigurationPropertyHolder configurationPropertyHolder;
-
-    @Autowired
-    SearchHandler searchHandlerChain;
+    private Thread thread;
 
 
-    public void process(String filePath) throws IOException{
-        logger.info("Started processing " + filePath);
-        InputStream fileStream = null;
-        String timestampPattern = null;
+    public FileProcessor(int id, FileProcessingQueue fileProcessingQueue, List<String> timestampPatterns, Writer writer) {
+        this.id = id;
+        this.fileProcessingQueue = fileProcessingQueue;
+        this.timestampPatterns = timestampPatterns;
+        this.writer = writer;
+        SearchHandler accountSearchHandler = new AccountSearchHandler(writer);
+        this.searchHandlerChain = accountSearchHandler;
+    }
 
-        byte[] buffer;
-        String bufferString = null;
-        int bytesRead = 0;
+    public void process() {
+        thread = new Thread(this);
+        thread.start();
+    }
 
-        fileStream =new FileInputStream(filePath);
-        buffer = new byte[MAX_BUFFER_SIZE];
-        bytesRead = fileStream.read(buffer, START_INDEX, MAX_BUFFER_SIZE);
+    public void run() {
+        File file = fileProcessingQueue.dequeue();
 
-        if(bytesRead != NO_READ_INDICATOR) {
-            timestampPattern = identifyTimestampPatternForFile(buffer);
-        }
+        while(file != null) {
+            logger.info("File Processor " + id + ": Started processing " + file.getPath());
+            InputStream fileStream = null;
+            String timestampPattern = null;
 
-        if(timestampPattern != null) {
-            do {
-                logger.info("Successfully read 1MB data.");
+            byte[] buffer;
+            String bufferString = null;
+            int bytesRead = 0;
 
-                bufferString = oldBufferString.substring(bytesProcessed).concat(new String(buffer, START_INDEX, MAX_BUFFER_SIZE));
-                List<Log> logs = logSplitter.split(normalizeBuffer(bufferString, timestampPattern), timestampPattern, filePath);
+            try {
+                fileStream = new FileInputStream(file.getPath());
+                buffer = new byte[MAX_BUFFER_SIZE];
+                bytesRead = fileStream.read(buffer, START_INDEX, MAX_BUFFER_SIZE);
 
-                for (Log log : logs) {
-                    searchHandlerChain.handle(log);
+                if (bytesRead != NO_READ_INDICATOR) {
+                    timestampPattern = identifyTimestampPatternForFile(buffer);
                 }
 
-                oldBufferString = bufferString;
-                buffer = new byte[MAX_BUFFER_SIZE];
-            } while((bytesRead = fileStream.read(buffer, START_INDEX, MAX_BUFFER_SIZE))
-                    != NO_READ_INDICATOR);
+                if (timestampPattern != null) {
+                    do {
+                        bufferString = oldBufferString.substring(bytesProcessed).concat(new String(buffer, START_INDEX, MAX_BUFFER_SIZE));
+                        List<Log> logs = LogSplitter.split(normalizeBuffer(bufferString, timestampPattern), timestampPattern, file.getPath());
 
-            searchHandlerChain.handle(logSplitter.split(oldBufferString.substring(bytesProcessed),timestampPattern,filePath).get(0));
+                        for (Log log : logs) {
+                            searchHandlerChain.handle(log);
+                        }
+
+                        oldBufferString = bufferString;
+                        buffer = new byte[MAX_BUFFER_SIZE];
+                    } while ((bytesRead = fileStream.read(buffer, START_INDEX, MAX_BUFFER_SIZE)) != NO_READ_INDICATOR);
+
+                    searchHandlerChain.handle(LogSplitter.split(oldBufferString.substring(bytesProcessed), timestampPattern, file.getPath()).get(0));
+                }
+
+                fileStream.close();
+            } catch(IOException exception) {
+                logger.info("File Processor " + id + ": Error occurred processing " + file.getPath());
+                logger.info("Exception: " + exception);
+            }
+
+            logger.info("File Processor " + id + ": Completed processing " + file.getPath());
+            file = fileProcessingQueue.dequeue();
+
         }
-
-        fileStream.close();
+        logger.info("File Processor " + id + ": No more file to process ");
     }
 
     private String identifyTimestampPatternForFile(byte[] buffer) throws IOException {
         String result = null;
         String bufferString = new String(buffer, START_INDEX, MAX_BUFFER_SIZE);
-        for (String patternString : configurationPropertyHolder.getTimestampPatterns()) {
+        for (String patternString : timestampPatterns) {
             Pattern pattern = Pattern.compile(patternString);
             Matcher matcher = pattern.matcher(bufferString);
             if (matcher.find()) {
@@ -115,4 +139,7 @@ public class FileProcessor {
         return buffer.substring(startOfFirstMatch, startOfLastMatch);
     }
 
+    public Thread getThread() {
+        return thread;
+    }
 }

@@ -12,7 +12,9 @@ public class DigitSequenceFinder {
 
     private static final String REGEX_FOR_DIGIT = "[0-9]";
 
-    public List<String> findSequenceFrom(String text, int numberOfDigits) {
+    private DigitSequenceFinder() {}
+
+    public static List<String> findSequenceFrom(String text, int numberOfDigits) {
         List<String> result = new ArrayList<>();
         if(text != null && !text.isEmpty() && text.length() >= numberOfDigits) {
             Pattern pattern = Pattern.compile(createRegexForNumberContaining(numberOfDigits));
@@ -24,7 +26,7 @@ public class DigitSequenceFinder {
         return result;
     }
 
-    private String createRegexForNumberContaining(int numberOfDigits) {
+    private static String createRegexForNumberContaining(int numberOfDigits) {
         StringBuilder stringBuilder = new StringBuilder();
         for(int i = 0; i < numberOfDigits; i ++) {
             stringBuilder.append(REGEX_FOR_DIGIT);
