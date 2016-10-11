@@ -29,8 +29,22 @@ public class ExcelFileWriter implements Writer {
     private int rowNumber = START_OF_DATA_ROW;
     private File outputFile;
 
-    public ExcelFileWriter(File outputFile) {
+    private static ExcelFileWriter instance = null;
+
+    private ExcelFileWriter(File outputFile) {
         this.outputFile = outputFile;
+    }
+
+    public static ExcelFileWriter getInstance(File outputFile) {
+        if(instance == null) {
+            synchronized(ExcelFileWriter.class) {
+                if(instance == null) {
+                    instance = new ExcelFileWriter(outputFile);
+                }
+            }
+        }
+
+        return instance;
     }
 
 

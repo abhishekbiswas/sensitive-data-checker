@@ -12,7 +12,7 @@ public class FileProcessingQueue {
     private Queue<File> queue;
 
     public FileProcessingQueue() {
-        queue = new LinkedList<File>();
+        queue = new LinkedList<>();
     }
 
     public synchronized boolean enqueue(File file) {

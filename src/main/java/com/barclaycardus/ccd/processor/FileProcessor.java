@@ -45,7 +45,7 @@ public class FileProcessor implements Runnable {
         this.fileProcessingQueue = fileProcessingQueue;
         this.timestampPatterns = timestampPatterns;
         this.writer = writer;
-        SearchHandler accountSearchHandler = new AccountSearchHandler(writer);
+        SearchHandler accountSearchHandler = AccountSearchHandler.getInstance(writer);
         this.searchHandlerChain = accountSearchHandler;
     }
 

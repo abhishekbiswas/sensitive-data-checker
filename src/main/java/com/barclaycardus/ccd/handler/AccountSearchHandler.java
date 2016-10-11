@@ -24,9 +24,22 @@ public class AccountSearchHandler extends SearchHandler {
     private static final int NUMBER_OF_DIGITS_IN_16_DIGIT_ACCOUNT_NUMBER = 16;
 
     private Writer writer;
+    private static AccountSearchHandler instance = null;
 
-    public AccountSearchHandler(Writer writer) {
+    private AccountSearchHandler(Writer writer) {
         this.writer = writer;
+    }
+
+    public static AccountSearchHandler getInstance(Writer writer) {
+        if(instance == null) {
+            synchronized(AccountSearchHandler.class) {
+                if(instance == null) {
+                    instance = new AccountSearchHandler(writer);
+                }
+            }
+        }
+
+        return instance;
     }
 
 

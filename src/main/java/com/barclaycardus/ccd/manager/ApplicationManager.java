@@ -65,7 +65,7 @@ public class ApplicationManager {
 
         List<FileProcessor> fileProcessors= new ArrayList<>();
         List<String> timestampPatterns = configurationPropertyHolder.getTimestampPatterns();
-        Writer writer = new ExcelFileWriter(new File(argumentData.getOutputFilePath()));
+        Writer writer = ExcelFileWriter.getInstance(new File(argumentData.getOutputFilePath()));
 
         for(int i = 0; i < configurationPropertyHolder.getThreadCount(); i++) {
             FileProcessor fileProcessor = new FileProcessor((i + 1), fileProcessingQueue, timestampPatterns, writer);
