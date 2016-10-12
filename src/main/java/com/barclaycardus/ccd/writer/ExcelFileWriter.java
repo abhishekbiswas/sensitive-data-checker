@@ -1,12 +1,7 @@
 package com.barclaycardus.ccd.writer;
 
 import com.barclaycardus.ccd.dto.ResultEntry;
-import com.barclaycardus.ccd.manager.ApplicationManager;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
 
@@ -25,32 +20,19 @@ public class ExcelFileWriter implements Writer {
     private static final String LOGGING_TIMESTAMP_HEADER = "LOGGING_TIMESTAMP";
     private static final String LOG_DATA_HEADER = "LOG DATA";
 
-
     private int rowNumber = START_OF_DATA_ROW;
     private File outputFile;
 
-    private static ExcelFileWriter instance = null;
-
-    private ExcelFileWriter(File outputFile) {
+    public ExcelFileWriter(File outputFile) throws IOException {
         this.outputFile = outputFile;
-    }
-
-    public static ExcelFileWriter getInstance(File outputFile) {
-        if(instance == null) {
-            synchronized(ExcelFileWriter.class) {
-                if(instance == null) {
-                    instance = new ExcelFileWriter(outputFile);
-                }
-            }
+        if (outputFile.exists() && outputFile.isFile()) {
+            outputFile.delete();
         }
-
-        return instance;
+        createResultSheetIfNotPresent(SHEET_NAME);
     }
-
 
     @Override
     public synchronized void write(ResultEntry resultEntry) throws IOException {
-        createResultSheetIfNotPresent(SHEET_NAME);
 
         InputStream fileInputStream = new FileInputStream(outputFile.getPath());
         XSSFWorkbook workBook = new XSSFWorkbook(fileInputStream);
@@ -91,7 +73,7 @@ public class ExcelFileWriter implements Writer {
     private void createRowWithData(XSSFSheet sheet, int rowNumber, ResultEntry resultEntry) {
         XSSFRow row = sheet.createRow(rowNumber);
 
-        row.createCell(0).setCellValue(SHEET_NAME);
+        row.createCell(0).setCellValue(resultEntry.getType());
         row.createCell(1).setCellValue(resultEntry.getSensitiveData());
         row.createCell(2).setCellValue(resultEntry.getFilePath());
         row.createCell(3).setCellValue(resultEntry.getLoggingTimestamp());

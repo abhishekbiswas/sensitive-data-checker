@@ -6,8 +6,7 @@ import com.barclaycardus.ccd.parser.DefaultArgumentParser;
 import com.barclaycardus.ccd.processor.FileProcessingQueue;
 import com.barclaycardus.ccd.validator.ArgumentValidator;
 import com.barclaycardus.ccd.validator.DefaultArgumentValidator;
-import com.barclaycardus.ccd.writer.ExcelFileWriter;
-import com.barclaycardus.ccd.writer.Writer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,13 +14,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
  * Created by abhishek on 29/04/16.
  */
-
-
 @Configuration
 @ComponentScan(value={"com.barclaycardus.ccd"})
 @PropertySource("classpath:application.properties")
@@ -37,6 +36,7 @@ public class AppConfiguration {
         return new ConfigurationPropertyHolder.Builder()
                         .logFileFormat(env.getProperty("log.file.format"))
                         .timestampPatterns(Arrays.asList(env.getProperty("timestamp.patterns").split(";")))
+                        .outputFile(new File(Paths.get("").toAbsolutePath().toString() + File.separator + env.getProperty("output.file")))
                         .threadCount(Integer.parseInt(env.getProperty("thread.count")))
                         .build();
     }

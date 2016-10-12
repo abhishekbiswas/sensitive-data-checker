@@ -1,10 +1,8 @@
 package com.barclaycardus.ccd.processor;
 
 import com.barclaycardus.ccd.dto.Log;
-import com.barclaycardus.ccd.handler.AccountSearchHandler;
 import com.barclaycardus.ccd.handler.SearchHandler;
 import com.barclaycardus.ccd.utility.LogSplitter;
-import com.barclaycardus.ccd.writer.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +29,7 @@ public class FileProcessor implements Runnable {
     private int id;
     private FileProcessingQueue fileProcessingQueue;
     private List<String> timestampPatterns;
-    SearchHandler searchHandlerChain;
-    Writer writer;
+    private SearchHandler searchHandlerChain;
 
     private String oldBufferString = "";
     private int bytesProcessed = 0;
@@ -40,13 +37,11 @@ public class FileProcessor implements Runnable {
     private Thread thread;
 
 
-    public FileProcessor(int id, FileProcessingQueue fileProcessingQueue, List<String> timestampPatterns, Writer writer) {
-        this.id = id;
-        this.fileProcessingQueue = fileProcessingQueue;
-        this.timestampPatterns = timestampPatterns;
-        this.writer = writer;
-        SearchHandler accountSearchHandler = AccountSearchHandler.getInstance(writer);
-        this.searchHandlerChain = accountSearchHandler;
+    public FileProcessor(Builder builder) {
+        this.id = builder.id;
+        this.fileProcessingQueue = builder.fileProcessingQueue;
+        this.timestampPatterns = builder.timestampPatterns;
+        this.searchHandlerChain = builder.searchHandlerChain;
     }
 
     public void process() {
@@ -141,5 +136,37 @@ public class FileProcessor implements Runnable {
 
     public Thread getThread() {
         return thread;
+    }
+
+    public static class Builder {
+        private int id;
+        private FileProcessingQueue fileProcessingQueue;
+        private List<String> timestampPatterns;
+        private SearchHandler searchHandlerChain;
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder fileProcessingQueue(FileProcessingQueue fileProcessingQueue) {
+            this.fileProcessingQueue = fileProcessingQueue;
+            return this;
+        }
+
+        public Builder timestampPatterns(List<String> timestampPatterns) {
+            this.timestampPatterns = timestampPatterns;
+            return this;
+        }
+
+        public Builder searchHadlerChain(SearchHandler searchHandlerChain) {
+            this.searchHandlerChain = searchHandlerChain;
+            return this;
+        }
+
+        public FileProcessor build() {
+            return new FileProcessor(this);
+        }
+
     }
 }

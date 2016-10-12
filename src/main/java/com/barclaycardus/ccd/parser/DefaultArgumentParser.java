@@ -8,13 +8,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by abhishek on 29/04/16.
  */
-
 public class DefaultArgumentParser implements ArgumentParser{
 
     private static final String INPUT_FOLDER_OPTION = "i";
     private static final String INPUT_FOLDER_LONG_OPTION = "infolderpath";
-    private static final String OUTPUT_FILE_OPTION = "o";
-    private static final String OUTPUT_FILE_LONG_OPTION = "outfilepath";
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultArgumentParser.class);
 
@@ -25,7 +22,6 @@ public class DefaultArgumentParser implements ArgumentParser{
         Options options = getOptions();
 
         String inputFolderPath = null;
-        String outputFilePath = null;
 
         try {
             commandLine = parser.parse(options, arguments);
@@ -33,7 +29,7 @@ public class DefaultArgumentParser implements ArgumentParser{
         catch(ParseException exp) {
             logger.error("Incorrect usage. " + exp.getMessage() + ".");
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("sensitivedatachecker", options);
+            formatter.printHelp("sensitive-data-checker", options);
             System.exit(0);
         }
 
@@ -41,11 +37,7 @@ public class DefaultArgumentParser implements ArgumentParser{
             inputFolderPath = commandLine.getOptionValue(INPUT_FOLDER_OPTION);
         }
 
-        if(commandLine.hasOption(OUTPUT_FILE_OPTION)) {
-            outputFilePath = commandLine.getOptionValue(OUTPUT_FILE_OPTION);
-        }
-
-        ArgumentData argumentData = new ArgumentData(inputFolderPath, outputFilePath);
+        ArgumentData argumentData = new ArgumentData(inputFolderPath);
 
         return argumentData;
     }
@@ -59,20 +51,11 @@ public class DefaultArgumentParser implements ArgumentParser{
                 .required()
                 .build();
 
-        Option outFile = Option.builder(OUTPUT_FILE_OPTION)
-                .longOpt(OUTPUT_FILE_LONG_OPTION)
-                .hasArg()
-                .desc("output file path")
-                .required()
-                .build();
-
         Options options = new Options();
 
         options.addOption(inFolderPath);
-        options.addOption(outFile);
 
         return options;
-
     }
 
 }

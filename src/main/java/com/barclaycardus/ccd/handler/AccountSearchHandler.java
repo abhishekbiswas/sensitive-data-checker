@@ -4,8 +4,6 @@ import com.barclaycardus.ccd.dto.Log;
 import com.barclaycardus.ccd.dto.ResultEntry;
 import com.barclaycardus.ccd.utility.DigitSequenceFinder;
 import com.barclaycardus.ccd.writer.Writer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +12,6 @@ import java.util.List;
 /**
  * Created by abhishek on 02/05/16.
  */
-
 public class AccountSearchHandler extends SearchHandler {
 
     private static final String SENSITIVE_DATA_TYPE = "Account Number";
@@ -24,24 +21,10 @@ public class AccountSearchHandler extends SearchHandler {
     private static final int NUMBER_OF_DIGITS_IN_16_DIGIT_ACCOUNT_NUMBER = 16;
 
     private Writer writer;
-    private static AccountSearchHandler instance = null;
 
-    private AccountSearchHandler(Writer writer) {
+    public AccountSearchHandler(Writer writer) {
         this.writer = writer;
     }
-
-    public static AccountSearchHandler getInstance(Writer writer) {
-        if(instance == null) {
-            synchronized(AccountSearchHandler.class) {
-                if(instance == null) {
-                    instance = new AccountSearchHandler(writer);
-                }
-            }
-        }
-
-        return instance;
-    }
-
 
     public void handle(Log log) throws IOException {
         List<String> fifteenDigitAccountNumbers = DigitSequenceFinder.findSequenceFrom(log.getDetails(),
@@ -68,8 +51,8 @@ public class AccountSearchHandler extends SearchHandler {
             writer.write(resultEntry);
         }
 
-        if(searchHandler != null) {
-            searchHandler.handle(log);
+        if(successor != null) {
+            successor.handle(log);
         }
     }
 

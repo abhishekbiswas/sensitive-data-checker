@@ -6,19 +6,13 @@ package com.barclaycardus.ccd.dto;
 public class ArgumentData {
 
     private String inputFolderPath;
-    private String outputFilePath;
 
-    public ArgumentData(String inputFolderPath, String outputFilePath) {
+    public ArgumentData(String inputFolderPath) {
         this.inputFolderPath = inputFolderPath;
-        this.outputFilePath = outputFilePath;
     }
 
     public String getInputFolderPath() {
         return inputFolderPath;
-    }
-
-    public String getOutputFilePath() {
-        return outputFilePath;
     }
 
 }

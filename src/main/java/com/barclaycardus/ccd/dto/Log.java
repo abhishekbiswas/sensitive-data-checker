@@ -15,7 +15,6 @@ public class Log {
         this.filePath = filePath;
     }
 
-
     public String getTimestamp() {
         return timestamp;
     }
