@@ -9,6 +9,7 @@ import com.barclaycardus.ccd.processor.FileProcessingQueue;
 import com.barclaycardus.ccd.processor.FileProcessor;
 import com.barclaycardus.ccd.validator.ArgumentValidator;
 import com.barclaycardus.ccd.writer.ExcelFileWriter;
+import com.barclaycardus.ccd.writer.Writer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -63,7 +64,8 @@ public class ApplicationManager {
         }
 
         List<FileProcessor> fileProcessors= new ArrayList<>();
-        SearchHandler searchHandlerChain = new AccountSearchHandler(new ExcelFileWriter(configurationPropertyHolder.getOutputFile()));
+        Writer writer = ExcelFileWriter.getInstance(configurationPropertyHolder.getOutputFile());
+        SearchHandler searchHandlerChain = new AccountSearchHandler(writer);
 
         for(int i = 0; i < configurationPropertyHolder.getThreadCount(); i++) {
             FileProcessor fileProcessor = new FileProcessor.Builder()
@@ -84,7 +86,4 @@ public class ApplicationManager {
         logger.info("Success!");
     }
 
-    public ArgumentData getArgumentData() {
-        return argumentData;
-    }
 }

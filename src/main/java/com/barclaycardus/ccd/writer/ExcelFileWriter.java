@@ -20,15 +20,29 @@ public class ExcelFileWriter implements Writer {
     private static final String LOGGING_TIMESTAMP_HEADER = "LOGGING_TIMESTAMP";
     private static final String LOG_DATA_HEADER = "LOG DATA";
 
+    private static ExcelFileWriter instance = null;
+
     private int rowNumber = START_OF_DATA_ROW;
     private File outputFile;
 
-    public ExcelFileWriter(File outputFile) throws IOException {
+    private ExcelFileWriter(File outputFile) throws IOException {
         this.outputFile = outputFile;
         if (outputFile.exists() && outputFile.isFile()) {
             outputFile.delete();
         }
         createResultSheetIfNotPresent(SHEET_NAME);
+    }
+
+    public static ExcelFileWriter getInstance(File outputFile) throws IOException {
+        if(instance == null) {
+            synchronized(ExcelFileWriter.class) {
+                if(instance == null) {
+                    instance = new ExcelFileWriter(outputFile);
+                }
+            }
+        }
+
+        return instance;
     }
 
     @Override
