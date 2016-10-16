@@ -11,7 +11,7 @@ public abstract class SearchHandler {
 
     protected SearchHandler successor;
 
-    public void setSearchHandler(SearchHandler successor) {
+    public void setSuccessor(SearchHandler successor) {
         this.successor = successor;
     }
 

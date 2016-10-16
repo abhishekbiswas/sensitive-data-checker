@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by abhishek on 29/04/16.
@@ -45,6 +46,9 @@ public class ApplicationManager {
     private ArgumentData argumentData;
 
     public void process(String[] arguments) throws IOException, InterruptedException {
+
+        long startTime = System.currentTimeMillis();
+
         argumentData = argumentParser.parse(arguments);
 
         try {
@@ -54,10 +58,14 @@ public class ApplicationManager {
             System.exit(0);
         }
 
+        logger.info("Successfully validated arguments");
+
         File inputFolder = new File(argumentData.getInputFolderPath());
 
         Collection<File> logFiles = FileUtils.listFiles(inputFolder, new WildcardFileFilter(configurationPropertyHolder.getLogFileFormat()),
                 DirectoryFileFilter.DIRECTORY);
+
+        logger.info("Files found for processing: " + logFiles.size());
 
         for(File logFile : logFiles) {
             fileProcessingQueue.enqueue(logFile);
@@ -82,7 +90,14 @@ public class ApplicationManager {
             fileProcessor.getThread().join();
         }
 
-        logger.info("Result has been saved at: " + configurationPropertyHolder.getOutputFile());
+        long endTime = System.currentTimeMillis();
+        long timeElapsed = endTime - startTime;
+
+        logger.info("Total execution time: " + String.format("%02d:%02d:%02d.%03d", TimeUnit.MILLISECONDS.toHours(timeElapsed),
+                                                    TimeUnit.MILLISECONDS.toMinutes(timeElapsed) % TimeUnit.HOURS.toMinutes(1),
+                                                    TimeUnit.MILLISECONDS.toSeconds(timeElapsed) % TimeUnit.MINUTES.toSeconds(1),
+                                                    timeElapsed % 1000));
+        logger.info("Results have been saved at: " + configurationPropertyHolder.getOutputFile());
         logger.info("Success!");
     }
 
