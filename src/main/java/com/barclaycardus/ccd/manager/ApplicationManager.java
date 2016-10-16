@@ -67,9 +67,7 @@ public class ApplicationManager {
 
         logger.info("Files found for processing: " + logFiles.size());
 
-        for(File logFile : logFiles) {
-            fileProcessingQueue.enqueue(logFile);
-        }
+        fileProcessingQueue.addAll(logFiles);
 
         List<FileProcessor> fileProcessors= new ArrayList<>();
         Writer writer = ExcelFileWriter.getInstance(configurationPropertyHolder.getOutputFile());

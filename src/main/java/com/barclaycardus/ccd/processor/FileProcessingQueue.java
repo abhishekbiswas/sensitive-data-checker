@@ -1,6 +1,7 @@
 package com.barclaycardus.ccd.processor;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -13,6 +14,10 @@ public class FileProcessingQueue {
 
     public FileProcessingQueue() {
         queue = new LinkedList<>();
+    }
+
+    public synchronized boolean addAll(Collection<File> collection) {
+        return queue.addAll(collection);
     }
 
     public synchronized boolean enqueue(File file) {
